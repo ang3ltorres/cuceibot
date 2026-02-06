@@ -1,0 +1,74 @@
+.prompt-area {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(800px, 95%);
+  background: #1a1a1a;
+  padding: 0.75rem;
+  border-top-right-radius: 16px;
+  border-top-left-radius: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  z-index: 100;
+}
+
+.prompt-area textarea {
+  flex: 1;
+  resize: none;
+
+  background: #121212;
+  color: white;
+
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #333;
+
+  min-height: 3rem;
+  max-height: 8rem;
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  font-family: Helvetica;
+}
+
+.prompt-area button {
+  width: 48px;
+  height: 48px;
+
+  border-radius: 10px;
+  border: none;
+  background: #4a37aa;
+
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  transition: 
+    transform 0.15s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.prompt-area button:active {
+  transform: scale(0.92);
+  background: #3b2b8e;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+.prompt-area button {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+  -webkit-tap-highlight-color: transparent;
+
+  touch-action: manipulation;
+}

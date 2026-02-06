@@ -1,0 +1,9 @@
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+}
