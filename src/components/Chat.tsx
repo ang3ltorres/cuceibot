@@ -11,13 +11,22 @@ interface MessageBubbleProps {
 }
 
 const MessageBubble: FunctionalComponent<MessageBubbleProps> = ({message, type}) => {
+  const isTyping = (message === "__typing__");
 
   return (
 
     <p
-      class={`message-bubble ${type}`}
+      class={`message-bubble ${type} ${isTyping ? 'typing' : ''}`}
     >
-      {message}
+      {isTyping ? (
+        <span class="typing-dots" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      ) : (
+        message
+      )}
     </p>
   );
 };
