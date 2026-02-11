@@ -1,4 +1,5 @@
 import Chat from './components/Chat'
+import Menu from './components/Menu'
 import Prompt from './components/Prompt'
 import Top from './components/Top'
 import { useState } from 'preact/hooks'
@@ -61,11 +62,19 @@ Estoy diseñado para resolver tus preguntas sobre el CUCEI de manera rápida, cl
       text: welcomeMessage()
     }]);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <>
       <Top
         setMessages={setMessages}
         welcomeMessage={welcomeMessage}
+        onMenuToggle={() => setMenuOpen(true)}
+      />
+
+      <Menu
+        open={menuOpen}
+        onMenuToggle={() => setMenuOpen(false)}
       />
 
       <Chat
