@@ -1,7 +1,10 @@
 
 .menu-login-overlay {
 	position: fixed;
-	inset: 0;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
 	background: #0d0b17;
 	transform: translateX(-100%);
 	transition: transform 0.45s ease;
@@ -18,9 +21,9 @@
 }
 
 .menu-login-body {
-	width: 100vw;
+	width: 100%;
 	height: 100vh;
-	padding: 2.5rem 2.5rem;
+	padding: 5% 10% 5% 10%;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
