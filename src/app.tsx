@@ -1,5 +1,6 @@
 import Chat from './components/Chat'
 import Menu from './components/Menu'
+import MenuLogin from './components/MenuLogin'
 import Prompt from './components/Prompt'
 import Top from './components/Top'
 import { useState } from 'preact/hooks'
@@ -62,19 +63,34 @@ Estoy diseñado para resolver tus preguntas sobre el CUCEI de manera rápida, cl
       text: welcomeMessage()
     }]);
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const [menuLoginOpen, setMenuLoginOpen] = useState<string | null>(null);
+  
+  const [user, setUser] = useState<string | null>(null);
+  // const [user, setUser] = useState<string | null>("Angel Emmanuel Suarez Torres");
 
   return (
     <>
       <Top
         setMessages={setMessages}
         welcomeMessage={welcomeMessage}
-        onMenuToggle={() => setMenuOpen(true)}
+        setMenuOpen={setMenuOpen}
       />
 
       <Menu
-        open={menuOpen}
-        onMenuToggle={() => setMenuOpen(false)}
+        menuOpen={menuOpen}
+        setMenuOpen={setMenuOpen}
+
+        setMenuLoginOpen={setMenuLoginOpen}
+
+        user={user}
+        setUser={setUser}
+      />
+
+      <MenuLogin
+        menuLoginOpen={menuLoginOpen}
+        setMenuLoginOpen={setMenuLoginOpen}
+        setUser={setUser}
       />
 
       <Chat

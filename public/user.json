@@ -1,0 +1,27 @@
+{
+  "id": 1,
+  "username": "angel",
+  "conversations": [
+    {
+      "id": 1,
+      "messages": [
+        "Hola, ¿cómo estás?",
+        "¡Hola! Estoy bien, gracias por preguntar. ¿En qué puedo ayudarte hoy?"
+      ]
+    },
+    {
+      "id": 2,
+      "messages": [
+        "¿Cuál es el clima hoy?",
+        "El clima hoy es soleado con una temperatura máxima de 25 grados Celsius."
+      ]
+    },
+    {
+      "id": 3,
+      "messages": [
+        "¿Puedes recomendarme un buen restaurante cerca de mí?",
+        "Claro, hay un restaurante llamado 'La Casa del Sabor' a solo 5 minutos de tu ubicación. Ofrecen comida deliciosa y un ambiente acogedor."
+      ]
+    }
+  ]
+}

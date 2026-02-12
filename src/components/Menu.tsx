@@ -2,31 +2,69 @@ import type { FunctionalComponent } from "preact";
 
 import closeIcon from '../assets/close.svg?raw'
 import './Menu.css'
+import type { Dispatch, StateUpdater } from "preact/hooks";
 
 interface MenuProps {
-	open: boolean;
-	onMenuToggle: () => void;
+
+	menuOpen: boolean;
+	setMenuOpen: Dispatch<StateUpdater<boolean>>;
+
+	setMenuLoginOpen: Dispatch<StateUpdater<string | null>>;
+
+	user: string | null;
+	setUser: Dispatch<StateUpdater<string | null>>;
 }
 
-const Menu: FunctionalComponent<MenuProps> = ({ open, onMenuToggle }) => {
+const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLoginOpen, user, setUser }) => {
 	return (
-		<div class={`menu-overlay ${open ? 'open' : ''}`} aria-hidden={!open}>
+		<div
+			class={`menu-overlay ${menuOpen ? 'open' : ''}`}
+			inert={!menuOpen}>
 			<div class="menu-body">
 				<div class="menu-header">
-					<span class="menu-title">Menu</span>
+
+				<span className="menu-title">
+					Hola,<br />
+					{user ? user : "Invitado"}
+				</span>
 
         <button
           class="icon-button"
           title="Close"
-          onClick={onMenuToggle}
+          onClick={() => setMenuOpen(false)}
         >
           <span class="icon" dangerouslySetInnerHTML={{ __html: closeIcon }} />
         </button>
 				</div>
 				<div class="menu-content">
-					<button class="menu-item" type="button">Iniciar sesión</button>
-					<button class="menu-item" type="button">Ajustes</button>
-					<button class="menu-item" type="button">Salir</button>
+
+					{user ? (
+						<>
+							<button class="menu-item" type="button">Ajustes</button>
+							<button
+								class="menu-item"
+								type="button"
+								onClick={() => setUser(null)}
+							>
+								Cerrar sesión
+							</button>
+						</>
+					) : (
+						<>
+							<button
+								class="menu-item"
+								type="button"
+								onClick={() => setMenuLoginOpen("login")}>
+									Iniciar sesión
+							</button>
+							<button
+								class="menu-item"
+								type="button"
+								onClick={() => setMenuLoginOpen("register")}>
+									Registrarse
+							</button>
+						</>
+					)}
 				</div>
 			</div>
 		</div>

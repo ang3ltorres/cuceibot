@@ -1,4 +1,5 @@
 import type { FunctionalComponent } from "preact";
+import type { Dispatch, StateUpdater } from "preact/hooks";
 
 import cuceiLogo from '../assets/cucei_logo_01.svg?raw'
 import menuIcon from '../assets/menu.svg?raw'
@@ -8,15 +9,11 @@ import './Top.css'
 interface TopProps {
   setMessages: (fn: (prev: { id: string, text: string }[]) => { id: string, text: string }[]) => void;
   welcomeMessage: () => string;
-  onMenuToggle: () => void;
+  setMenuOpen: Dispatch<StateUpdater<boolean>>;
 }
 
-const Top: FunctionalComponent<TopProps> = ({ setMessages, welcomeMessage, onMenuToggle }) => {
+const Top: FunctionalComponent<TopProps> = ({ setMessages, welcomeMessage, setMenuOpen }) => {
 
-  const menuToggle = () => {
-    onMenuToggle();
-  };
-  
   const clear = () => {
 
     setMessages(() => [{
@@ -35,7 +32,7 @@ const Top: FunctionalComponent<TopProps> = ({ setMessages, welcomeMessage, onMen
         <button
           class="icon-button"
           title="Menu"
-          onClick={menuToggle}
+          onClick={() => setMenuOpen(true)}
         >
           <span class="icon" dangerouslySetInnerHTML={{ __html: menuIcon }} />
         </button>
