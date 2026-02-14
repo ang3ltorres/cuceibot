@@ -1,19 +1,28 @@
 import type { FunctionalComponent } from "preact";
-import { useState } from 'preact/hooks'
+import { useRef, useState } from 'preact/hooks'
 import './Prompt.css'
 
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 interface PromptProps {
+
+  messages: { id: string, text: string }[];
   setMessages: (fn: (prev: { id: string, text: string }[]) => { id: string, text: string }[]) => void;
 }
 
-const Prompt: FunctionalComponent<PromptProps> = ({setMessages}) => {
+const Prompt: FunctionalComponent<PromptProps> = ({messages, setMessages}) => {
 
   const [input, setInput] = useState("");
+  const pendingRequestRef = useRef(false);
+  const isWaitingForAgent = messages.some((message) => message.text === "__typing__");
 
   const send = async () => {
+
     if (!input.trim()) return;
+
+    if (isWaitingForAgent || pendingRequestRef.current) return;
+
+    pendingRequestRef.current = true;
 
     const userMessage = { id: crypto.randomUUID(), text: input };
     const loadingId = crypto.randomUUID();
@@ -53,6 +62,8 @@ const Prompt: FunctionalComponent<PromptProps> = ({setMessages}) => {
             : m
         )
       );
+    } finally {
+      pendingRequestRef.current = false;
     }
   };
 
@@ -79,6 +90,7 @@ const Prompt: FunctionalComponent<PromptProps> = ({setMessages}) => {
       />
       <button
         type="button"
+        disabled={isWaitingForAgent || pendingRequestRef.current}
         onClick={send}
       >↑</button>
     </div>

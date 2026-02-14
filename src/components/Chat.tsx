@@ -33,7 +33,7 @@ const MessageBubble: FunctionalComponent<MessageBubbleProps> = ({message, type})
 
 interface ChatProps {
 
-  messages: { id: string, text: string }[],
+  messages: { id: string, text: string }[];
 }
 
 const Chat: FunctionalComponent<ChatProps> = ({messages}) => {
