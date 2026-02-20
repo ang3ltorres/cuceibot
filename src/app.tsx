@@ -3,11 +3,19 @@ import Menu from './components/Menu'
 import MenuLogin from './components/MenuLogin'
 import Prompt from './components/Prompt'
 import Top from './components/Top'
-import { useState } from 'preact/hooks'
+import { useEffect, useState } from 'preact/hooks'
 
 import './app.css'
 
 export function App() {
+
+  const clear = () => {
+
+    setMessages(() => [{
+      id: crypto.randomUUID(),
+      text: welcomeMessage()
+    }]);
+  };
 
   const welcomeMessage = () => {
 
@@ -58,22 +66,23 @@ Estoy diseñado para resolver tus preguntas sobre el CUCEI de manera rápida, cl
     return messages[Math.floor(Math.random() * messages.length)]
   };
 
-  const [messages, setMessages] = useState<{ id: string, text: string }[]>([{
-      id: crypto.randomUUID(),
-      text: welcomeMessage()
-    }]);
+  const [messages, setMessages] = useState<{ id: string, text: string }[]>([]);
 
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [menuLoginOpen, setMenuLoginOpen] = useState<string | null>(null);
   
   const [user, setUser] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<string[][] | null>(null);
   // const [user, setUser] = useState<string | null>("Angel Emmanuel Suarez Torres");
+
+  useEffect(() => {
+    clear();
+  }, []);
 
   return (
     <>
       <Top
-        setMessages={setMessages}
-        welcomeMessage={welcomeMessage}
+        clear={clear}
         setMenuOpen={setMenuOpen}
       />
 
@@ -85,12 +94,24 @@ Estoy diseñado para resolver tus preguntas sobre el CUCEI de manera rápida, cl
 
         user={user}
         setUser={setUser}
+
+        conversations={conversations}
+        setConversations={setConversations}
+
+        setMessages={setMessages}
       />
 
       <MenuLogin
         menuLoginOpen={menuLoginOpen}
         setMenuLoginOpen={setMenuLoginOpen}
+
+        setMenuOpen={setMenuOpen}
+
         setUser={setUser}
+
+        setConversations={setConversations}
+
+        clear={clear}
       />
 
       <Chat

@@ -1,31 +1,22 @@
 import type { FunctionalComponent } from "preact";
 import type { Dispatch, StateUpdater } from "preact/hooks";
 
-import cuceiLogo from '../assets/cucei_logo_01.svg?raw'
+import botLogo from '../assets/cuceibot.svg?raw'
 import menuIcon from '../assets/menu.svg?raw'
 import refreshIcon from '../assets/refresh.svg?raw'
 import './Top.css'
 
 interface TopProps {
-  setMessages: (fn: (prev: { id: string, text: string }[]) => { id: string, text: string }[]) => void;
-  welcomeMessage: () => string;
+  clear: () => void;
   setMenuOpen: Dispatch<StateUpdater<boolean>>;
 }
 
-const Top: FunctionalComponent<TopProps> = ({ setMessages, welcomeMessage, setMenuOpen }) => {
-
-  const clear = () => {
-
-    setMessages(() => [{
-      id: crypto.randomUUID(),
-      text: welcomeMessage()
-    }]);
-  };
+const Top: FunctionalComponent<TopProps> = ({ clear, setMenuOpen }) => {
 
   return (
     <div class="top-area">
       <div class="avatar">
-        <span class="logo" dangerouslySetInnerHTML={{ __html: cuceiLogo }} />
+        <span class="logo" dangerouslySetInnerHTML={{ __html: botLogo }} />
       </div>
       <span class="top-title">Cucei Bot</span>
       <div class="top-actions">

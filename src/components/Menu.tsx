@@ -13,9 +13,14 @@ interface MenuProps {
 
 	user: string | null;
 	setUser: Dispatch<StateUpdater<string | null>>;
+
+	conversations: string[][] | null;
+	setConversations: Dispatch<StateUpdater<string[][] | null>>;
+
+	setMessages: Dispatch<StateUpdater<{ id: string, text: string }[]>>;
 }
 
-const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLoginOpen, user, setUser }) => {
+const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLoginOpen, user, setUser, conversations, setConversations, setMessages }) => {
 	return (
 		<div
 			class={`menu-overlay ${menuOpen ? 'open' : ''}`}
@@ -44,10 +49,36 @@ const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLo
 							<button
 								class="menu-item"
 								type="button"
-								onClick={() => setUser(null)}
+								onClick={() => {
+									setUser(null);
+									setConversations(null);
+									setMenuOpen(false);
+									// TODO: start new conversation or show welcome message
+								}}
 							>
 								Cerrar sesión
 							</button>
+							<div class="menu-separator" aria-hidden="true" />
+							<div class="menu-conversations" role="list">
+								{conversations?.map((conv, index) => (
+									<button
+										class="menu-item"
+										type="button"
+										key={index}
+										onClick={() => {
+
+											// Recover conversation messages
+											setMessages(() => conv.map((text) => ({
+												id: crypto.randomUUID(),
+												text
+											})));
+											setMenuOpen(false);
+										}}
+									>
+										{`${(conv[1] ?? '').slice(0, 36)}...`}
+									</button>
+								))}
+							</div>
 						</>
 					) : (
 						<>

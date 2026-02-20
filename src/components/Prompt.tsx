@@ -1,5 +1,5 @@
 import type { FunctionalComponent } from "preact";
-import { useRef, useState } from 'preact/hooks'
+import { useRef, useState, type Dispatch, type StateUpdater } from 'preact/hooks'
 import './Prompt.css'
 
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -7,7 +7,7 @@ const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 interface PromptProps {
 
   messages: { id: string, text: string }[];
-  setMessages: (fn: (prev: { id: string, text: string }[]) => { id: string, text: string }[]) => void;
+  setMessages: Dispatch<StateUpdater<{ id: string, text: string }[]>>;
 }
 
 const Prompt: FunctionalComponent<PromptProps> = ({messages, setMessages}) => {
@@ -40,7 +40,8 @@ const Prompt: FunctionalComponent<PromptProps> = ({messages, setMessages}) => {
         `/api/ask/question=${encodeURIComponent(input)}`
       );
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok)
+        throw new Error(`HTTP ${res.status}`);
 
       const data = await res.json();
 
