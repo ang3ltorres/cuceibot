@@ -2,6 +2,7 @@ import type { FunctionalComponent } from "preact";
 
 import closeIcon from '../assets/close.svg?raw'
 import './Menu.css'
+import { useEffect, useRef } from "preact/hooks";
 import type { Dispatch, StateUpdater } from "preact/hooks";
 
 interface MenuProps {
@@ -18,14 +19,36 @@ interface MenuProps {
 	setConversations: Dispatch<StateUpdater<string[][] | null>>;
 
 	setMessages: Dispatch<StateUpdater<{ id: string, text: string }[]>>;
+	welcomeMessage: () => string;
 }
 
-const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLoginOpen, user, setUser, conversations, setConversations, setMessages }) => {
+const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLoginOpen, user, setUser, conversations, setConversations, setMessages, welcomeMessage }) => {
+	const menuBodyRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		if (!menuOpen) return;
+
+		const handlePointerDown = (event: PointerEvent) => {
+			const target = event.target as Node | null;
+			if (!target) return;
+
+			if (menuBodyRef.current && !menuBodyRef.current.contains(target)) {
+				setMenuOpen(false);
+			}
+		};
+
+		document.addEventListener("pointerdown", handlePointerDown);
+
+		return () => {
+			document.removeEventListener("pointerdown", handlePointerDown);
+		};
+	}, [menuOpen, setMenuOpen]);
+
 	return (
 		<div
 			class={`menu-overlay ${menuOpen ? 'open' : ''}`}
 			inert={!menuOpen}>
-			<div class="menu-body">
+			<div class="menu-body" ref={menuBodyRef}>
 				<div class="menu-header">
 
 				<span className="menu-title">
@@ -45,7 +68,6 @@ const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLo
 
 					{user ? (
 						<>
-							<button class="menu-item" type="button">Ajustes</button>
 							<button
 								class="menu-item"
 								type="button"
@@ -66,16 +88,17 @@ const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLo
 										type="button"
 										key={index}
 										onClick={() => {
-
-											// Recover conversation messages
-											setMessages(() => conv.map((text) => ({
-												id: crypto.randomUUID(),
-												text
-											})));
+											setMessages(() => [
+												{ id: crypto.randomUUID(), text: welcomeMessage() },
+												...conv.map((text) => ({
+													id: crypto.randomUUID(),
+													text,
+												})),
+											]);
 											setMenuOpen(false);
 										}}
 									>
-										{`${(conv[1] ?? '').slice(0, 36)}...`}
+										{`${(conv[0] ?? '').slice(0, 36)}...`}
 									</button>
 								))}
 							</div>

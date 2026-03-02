@@ -20,13 +20,10 @@ interface MenuLoginProps {
 	clear: () => void;
 }
 
-	type DebugUser = {
-		username?: string | null;
-		conversations?: string[][] | null;
-	};
 const MenuLogin: FunctionalComponent<MenuLoginProps> = ({ menuLoginOpen, setMenuLoginOpen, setMenuOpen, setUser, setConversations, clear }) => {
 
 	const [inputUsername, setInputUsername] = useState<string>("");
+	const [inputEmail, setInputEmail] = useState<string>("");
 	const [inputPassword, setInputPassword] = useState<string>("");
 	const [inputRepeatPassword, setInputRepeatPassword] = useState<string>("");
 
@@ -34,10 +31,32 @@ const MenuLogin: FunctionalComponent<MenuLoginProps> = ({ menuLoginOpen, setMenu
 	const [popupMessage, setPopupMessage] = useState<string>("");
 	const [popupOpen, setPopupOpen] = useState<boolean>(false);
 
+	type AuthTokenResponse = {
+		access_token?: string;
+		token_type?: string;
+	};
+
+	type ApiUserResponse = {
+		id?: string;
+		email?: string;
+		username?: string;
+	};
+
+	type ConversationResponse = {
+		id?: string;
+		user_id?: string;
+	};
+
+	type ConversationMessageResponse = {
+		id?: string;
+		content?: string;
+		seq?: number;
+	};
+
 	const onLoginSubmit = async (e: Event) => {
 		e.preventDefault();
 
-		if (!inputUsername.trim() || !inputPassword.trim()) {
+		if (!inputEmail.trim() || !inputPassword.trim()) {
 			setPopupTitle("Error de registro");
 			setPopupMessage("Todos los campos son obligatorios");
 			setPopupOpen(true);
@@ -45,18 +64,118 @@ const MenuLogin: FunctionalComponent<MenuLoginProps> = ({ menuLoginOpen, setMenu
 		}
 
 		try {
-			// TODO: Replace with real authentication logic
-			const response = await fetch("/user.json");
-			if (!response.ok)
-				throw new Error("Network response was not ok");
+			const formData = new URLSearchParams();
+			formData.append("username", inputEmail.trim());
+			formData.append("password", inputPassword);
 
-			const userData = (await response.json()) as DebugUser;
+			const response = await fetch("/api/token", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded",
+				},
+				body: formData.toString(),
+			});
 
-			setUser(userData.username ?? null);
-			setConversations(userData.conversations ?? null);
-			console.log(userData.conversations);
+			if (!response.ok) {
+				let errorMessage = "No se pudo autenticar. Por favor, inténtalo de nuevo.";
+				try {
+					const errorData = await response.json() as { detail?: string; message?: string };
+					errorMessage = errorData.detail ?? errorData.message ?? errorMessage;
+				}
+				catch {
+					// Keep default message if backend does not return JSON
+				}
+
+				setPopupTitle("Error de autenticación");
+				setPopupMessage(errorMessage);
+				setPopupOpen(true);
+				return;
+			}
+
+			const tokenData = await response.json() as AuthTokenResponse;
+			if (!tokenData.access_token) {
+				setPopupTitle("Error de autenticación");
+				setPopupMessage("Respuesta inválida del servidor de autenticación.");
+				setPopupOpen(true);
+				return;
+			}
+
+			const tokenType = tokenData.token_type ?? "bearer";
+			localStorage.setItem("access_token", tokenData.access_token);
+			localStorage.setItem("token_type", tokenType);
+			
+			// Get username of authenticated user
+			const meResponse = await fetch("/api/users/me", {
+				headers: {
+					Authorization: `${tokenType} ${tokenData.access_token}`,
+				},
+			});
+
+			if (!meResponse.ok) {
+				setPopupTitle("Error de autenticación");
+				setPopupMessage("No se pudo obtener el usuario autenticado.");
+				setPopupOpen(true);
+				localStorage.removeItem("access_token");
+				localStorage.removeItem("token_type");
+				return;
+			}
+
+			const meData = await meResponse.json() as ApiUserResponse;
+			if (!meData.username?.trim()) {
+				setPopupTitle("Error de autenticación");
+				setPopupMessage("El usuario autenticado no tiene username válido.");
+				setPopupOpen(true);
+				localStorage.removeItem("access_token");
+				localStorage.removeItem("token_type");
+				return;
+			}
+
+			const conversationsResponse = await fetch("/api/conversations", {
+				headers: {
+					Authorization: `${tokenType} ${tokenData.access_token}`,
+				},
+			});
+
+			if (!conversationsResponse.ok) {
+				setPopupTitle("Error de autenticación");
+				setPopupMessage("No se pudieron obtener las conversaciones del usuario.");
+				setPopupOpen(true);
+				localStorage.removeItem("access_token");
+				localStorage.removeItem("token_type");
+				return;
+			}
+
+			const conversationsData = await conversationsResponse.json() as ConversationResponse[];
+
+			const conversationsWithMessages = await Promise.all(
+				conversationsData.map(async (conversation) => {
+					if (!conversation.id) {
+						return [] as string[];
+					}
+
+					const messagesResponse = await fetch(`/api/conversations/${encodeURIComponent(conversation.id)}/messages`, {
+						headers: {
+							Authorization: `${tokenType} ${tokenData.access_token}`,
+						},
+					});
+
+					if (!messagesResponse.ok) {
+						throw new Error(`No se pudieron obtener los mensajes de la conversación ${conversation.id}`);
+					}
+
+					const messagesData = await messagesResponse.json() as ConversationMessageResponse[];
+					return messagesData
+						.map((message) => message.content?.trim() ?? "")
+						.filter((messageContent) => messageContent.length > 0);
+				})
+			);
+
+
+			setUser(meData.username);
+			setConversations(conversationsWithMessages);
 
 			setInputUsername("");
+			setInputEmail("");
 			setInputPassword("");
 			setMenuLoginOpen(null);
 			setMenuOpen(false);
@@ -70,10 +189,10 @@ const MenuLogin: FunctionalComponent<MenuLoginProps> = ({ menuLoginOpen, setMenu
 		}
 	};
 
-	const onRegisterSubmit = (e: Event) => {
+	const onRegisterSubmit = async (e: Event) => {
 		e.preventDefault();
 
-		if (!inputUsername.trim() || !inputPassword.trim() || !inputRepeatPassword.trim()) {
+		if (!inputUsername.trim() || !inputEmail.trim() || !inputPassword.trim() || !inputRepeatPassword.trim()) {
 			setPopupTitle("Error de registro");
 			setPopupMessage("Todos los campos son obligatorios");
 			setPopupOpen(true);
@@ -87,10 +206,47 @@ const MenuLogin: FunctionalComponent<MenuLoginProps> = ({ menuLoginOpen, setMenu
 			return;
 		}
 
-		// TODO: Update on DB through an API
-		setUser(inputUsername.trim());
+		try {
+			const response = await fetch("/api/users", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					username: inputUsername.trim(),
+					email: inputEmail.trim(),
+					password: inputPassword,
+				}),
+			});
+
+			if (!response.ok) {
+				let errorMessage = "No se pudo completar el registro. Inténtalo de nuevo.";
+				try {
+					const errorData = await response.json() as { detail?: string; message?: string };
+					errorMessage = errorData.detail ?? errorData.message ?? errorMessage;
+				}
+				catch {
+					// Keep default error message if response body is not JSON
+				}
+
+				setPopupTitle("Error de registro");
+				setPopupMessage(errorMessage);
+				setPopupOpen(true);
+				return;
+			}
+
+			const createdUser = await response.json() as ApiUserResponse;
+			setUser(createdUser.username?.trim() || inputUsername.trim());
+		}
+		catch {
+			setPopupTitle("Error de registro");
+			setPopupMessage("No se pudo conectar con el servidor. Inténtalo de nuevo.");
+			setPopupOpen(true);
+			return;
+		}
 		
 		setInputUsername("");
+		setInputEmail("");
 		setInputPassword("");
 		setInputRepeatPassword("");
 		setMenuLoginOpen(null);
@@ -123,6 +279,7 @@ const MenuLogin: FunctionalComponent<MenuLoginProps> = ({ menuLoginOpen, setMenu
 						onClick={() => {
 							setMenuLoginOpen(null);
 							setInputUsername("");
+							setInputEmail("");
 							setInputPassword("");
 							setInputRepeatPassword("");
 						}}
@@ -142,6 +299,16 @@ const MenuLogin: FunctionalComponent<MenuLoginProps> = ({ menuLoginOpen, setMenu
 								setInputUsername((e.currentTarget as HTMLInputElement).value)
 							}
 							autocomplete="username"
+						/>
+						<input
+							class="menu-login-input"
+							type="email"
+							placeholder="Correo"
+							value={inputEmail}
+							onInput={(e) =>
+								setInputEmail((e.currentTarget as HTMLInputElement).value)
+							}
+							autocomplete="email"
 						/>
 						<input
 							class="menu-login-input"
@@ -172,13 +339,13 @@ const MenuLogin: FunctionalComponent<MenuLoginProps> = ({ menuLoginOpen, setMenu
 					<form class="menu-login-content" onSubmit={onLoginSubmit as any}>
 						<input
 							class="menu-login-input"
-							type="text"
-							placeholder="Usuario"
-							value={inputUsername}
+							type="email"
+							placeholder="Correo"
+							value={inputEmail}
 							onInput={(e) =>
-								setInputUsername((e.currentTarget as HTMLInputElement).value)
+								setInputEmail((e.currentTarget as HTMLInputElement).value)
 							}
-							autocomplete="username"
+							autocomplete="email"
 						/>
 						<input
 							class="menu-login-input"

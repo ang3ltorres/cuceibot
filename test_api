@@ -1,0 +1,15 @@
+#!/bin/bash
+
+API="http://napydom.duckdns.org:56756"
+
+echo "Creating test user..."
+
+curl -s -X POST "$API/users" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "Test User",
+    "email": "test.user@example.com",
+    "password": "test_password_123"
+  }' | jq '.'
+
+echo "Done"

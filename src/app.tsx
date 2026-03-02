@@ -99,6 +99,7 @@ Estoy diseñado para resolver tus preguntas sobre el CUCEI de manera rápida, cl
         setConversations={setConversations}
 
         setMessages={setMessages}
+        welcomeMessage={welcomeMessage}
       />
 
       <MenuLogin
