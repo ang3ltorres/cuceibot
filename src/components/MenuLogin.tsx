@@ -53,6 +53,10 @@ const MenuLogin: FunctionalComponent<MenuLoginProps> = ({ menuLoginOpen, setMenu
 		seq?: number;
 	};
 
+	const isValidStudentEmail = (email: string): boolean => {
+		return /^[^\s@]+@alumnos\.udg\.mx$/i.test(email.trim());
+	};
+
 	const onLoginSubmit = async (e: Event) => {
 		e.preventDefault();
 
@@ -195,6 +199,13 @@ const MenuLogin: FunctionalComponent<MenuLoginProps> = ({ menuLoginOpen, setMenu
 		if (!inputUsername.trim() || !inputEmail.trim() || !inputPassword.trim() || !inputRepeatPassword.trim()) {
 			setPopupTitle("Error de registro");
 			setPopupMessage("Todos los campos son obligatorios");
+			setPopupOpen(true);
+			return;
+		}
+
+		if (!isValidStudentEmail(inputEmail)) {
+			setPopupTitle("Error de registro");
+			setPopupMessage("El correo debe tener el formato: mail@alumnos.udg.mx");
 			setPopupOpen(true);
 			return;
 		}

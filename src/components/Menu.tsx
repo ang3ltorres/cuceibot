@@ -20,9 +20,10 @@ interface MenuProps {
 
 	setMessages: Dispatch<StateUpdater<{ id: string, text: string }[]>>;
 	welcomeMessage: () => string;
+	clear: () => void;
 }
 
-const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLoginOpen, user, setUser, conversations, setConversations, setMessages, welcomeMessage }) => {
+const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLoginOpen, user, setUser, conversations, setConversations, setMessages, welcomeMessage, clear }) => {
 	const menuBodyRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
@@ -75,7 +76,7 @@ const Menu: FunctionalComponent<MenuProps> = ({ menuOpen, setMenuOpen, setMenuLo
 									setUser(null);
 									setConversations(null);
 									setMenuOpen(false);
-									// TODO: start new conversation or show welcome message
+									clear();
 								}}
 							>
 								Cerrar sesión

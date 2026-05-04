@@ -1,6 +1,7 @@
 import type { FunctionalComponent } from "preact";
 import { useRef, useState, type Dispatch, type StateUpdater } from 'preact/hooks'
 import './Prompt.css'
+import sendIcon from '../assets/send.svg?raw';
 
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -125,10 +126,13 @@ const Prompt: FunctionalComponent<PromptProps> = ({messages, setMessages}) => {
         }}
       />
       <button
-        type="button"
+        class="icon-button"
+        title="Send"
         disabled={isWaitingForAgent || pendingRequestRef.current}
         onClick={send}
-      >↑</button>
+      >
+        <span class="icon" dangerouslySetInnerHTML={{ __html: sendIcon }} />
+      </button>
     </div>
   );
 };

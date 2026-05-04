@@ -100,6 +100,7 @@ Estoy diseñado para resolver tus preguntas sobre el CUCEI de manera rápida, cl
 
         setMessages={setMessages}
         welcomeMessage={welcomeMessage}
+        clear={clear}
       />
 
       <MenuLogin
