@@ -103,7 +103,8 @@
 .menu-login-header .icon-button {
 	width: 3rem;
 	height: 3rem;
-	background-color: red;
+  background-color: black;
+	border: 2px solid white;
 }
 
 .menu-login-header .icon-button .icon {

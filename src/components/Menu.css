@@ -105,7 +105,8 @@
 .menu-header .icon-button {
   width: 3rem;
   height: 3rem;
-  background-color: red;
+  background-color: black;
+	border: 2px solid white;
 }
 
 .menu-header .icon-button .icon {
