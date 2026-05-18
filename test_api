@@ -1,6 +1,6 @@
 #!/bin/bash
 
-API="http://napydom.duckdns.org:56756"
+API="177.227.149.12:56756"
 
 echo "Creating test user..."
 

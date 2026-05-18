@@ -6,12 +6,13 @@ import sendIcon from '../assets/send.svg?raw';
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 interface PromptProps {
-
+  
+  user: string | null;
   messages: { id: string, text: string }[];
   setMessages: Dispatch<StateUpdater<{ id: string, text: string }[]>>;
 }
 
-const Prompt: FunctionalComponent<PromptProps> = ({messages, setMessages}) => {
+const Prompt: FunctionalComponent<PromptProps> = ({user, messages, setMessages}) => {
 
   const [input, setInput] = useState("");
   const pendingRequestRef = useRef(false);
@@ -37,60 +38,96 @@ const Prompt: FunctionalComponent<PromptProps> = ({messages, setMessages}) => {
 
     setInput("");
 
+    // Keep prior conversation only (without welcome/typing); the current question goes in `question`.
+    const conversationHistory = messages
+      .slice(1)
+      .filter((message) => message.text !== "__typing__")
+      .map((message) => message.text);
+
+    // If we are not logged in, use /api/ask endpoint without stored conversation id.
     try {
-      const accessToken = localStorage.getItem("access_token");
-      const tokenType = localStorage.getItem("token_type") ?? "bearer";
 
-      if (!accessToken) {
-        throw new Error("No auth token");
-      }
-
-      // Create conversation if it's the first message
-      if (messages.length === 1 || !conversationIdRef.current) {
-        const createConversationResponse = await fetch("/api/conversations", {
-          method: "POST",
-          headers: {
-            Authorization: `${tokenType} ${accessToken}`,
-          },
-        });
-
-        if (!createConversationResponse.ok) {
-          throw new Error(`HTTP ${createConversationResponse.status}`);
-        }
-
-        const createdConversation = await createConversationResponse.json() as { id?: string };
-        if (!createdConversation.id) {
-          throw new Error("Missing conversation id");
-        }
-
-        conversationIdRef.current = createdConversation.id;
-      }
-
-      const res = await fetch(
-        `/api/conversations/${encodeURIComponent(conversationIdRef.current)}/messages`,
-        {
+      if (user === null) {
+        const res = await fetch("/api/ask", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `${tokenType} ${accessToken}`,
           },
           body: JSON.stringify({
-            msg: userMessage.text,
+            question: userMessage.text,
+            conversation: conversationHistory,
           }),
+        });
+
+        // Set new meessage with the answer or error
+        if (!res.ok)
+          throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json() as { llm?: string; answer?: string; message?: string };
+        const answer = data.llm ?? data.answer ?? data.message ?? "Sin respuesta del servidor";
+        
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === loadingId ? { ...m, text: String(answer) } : m
+          )
+        );
+      }
+      else {
+        const accessToken = localStorage.getItem("access_token");
+        const tokenType = localStorage.getItem("token_type") ?? "bearer";
+
+        if (!accessToken) {
+          throw new Error("No auth token");
         }
-      );
 
-      if (!res.ok)
-        throw new Error(`HTTP ${res.status}`);
+        // Create conversation if it's the first message
+        if (messages.length === 1 || !conversationIdRef.current) {
+          const createConversationResponse = await fetch("/api/conversations", {
+            method: "POST",
+            headers: {
+              Authorization: `${tokenType} ${accessToken}`,
+            },
+          });
 
-      const data = await res.json() as { ia_message?: { content?: string } };
-      const answer = data.ia_message?.content ?? "Sin respuesta del servidor";
+          if (!createConversationResponse.ok) {
+            throw new Error(`HTTP ${createConversationResponse.status}`);
+          }
 
-      setMessages(prev =>
-        prev.map(m =>
-          m.id === loadingId ? { ...m, text: String(answer) } : m
-        )
-      );
+          const createdConversation = await createConversationResponse.json() as { id?: string };
+          if (!createdConversation.id) {
+            throw new Error("Missing conversation id");
+          }
+
+          conversationIdRef.current = createdConversation.id;
+        }
+
+        const res = await fetch(
+          `/api/conversations/${encodeURIComponent(conversationIdRef.current)}/messages`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${tokenType} ${accessToken}`,
+            },
+            body: JSON.stringify({
+              msg: userMessage.text,
+            }),
+          }
+        );
+
+        if (!res.ok)
+          throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json() as { ia_message?: { content?: string } };
+        const answer = data.ia_message?.content ?? "Sin respuesta del servidor";
+
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === loadingId ? { ...m, text: String(answer) } : m
+          )
+        );
+      }
+
     } catch (err) {
       setMessages(prev =>
         prev.map(m =>

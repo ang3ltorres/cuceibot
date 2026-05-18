@@ -121,6 +121,8 @@ Estoy diseñado para resolver tus preguntas sobre el CUCEI de manera rápida, cl
       />
 
       <Prompt
+        user={user}
+
         messages={messages}
         setMessages={setMessages}
       />

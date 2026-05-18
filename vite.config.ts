@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://napydom.duckdns.org:56756',
+        target: 'http://177.227.149.12:56756',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api/, ''),
       }
